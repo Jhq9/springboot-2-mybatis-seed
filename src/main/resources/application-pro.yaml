@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    username: root
+    password: Jovaunn1
+    url: jdbc:mysql://127.0.0.1:3306/springboot-2-mybatis-seed?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=GMT
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-test-query: SELECT 1
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: Hikaricp-pool
