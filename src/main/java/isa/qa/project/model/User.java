@@ -1,5 +1,6 @@
 package isa.qa.project.model;
 
+import isa.qa.project.base.BaseEntity;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -17,13 +18,7 @@ import java.util.Date;
  */
 @Data
 @Table(name = "i_user")
-public class User implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @Column(name = "id")
-    private Long id;
+public class User extends BaseEntity {
 
     /**
      * Foreign key of role
@@ -32,10 +27,16 @@ public class User implements Serializable {
     private Long roleId;
 
     /**
-     * Username
+     * 用户的账号
      */
-    @Column(name = "name")
-    private String name;
+    @Column(name = "username")
+    private String username;
+
+    /**
+     * nickname
+     */
+    @Column(name = "nickname")
+    private String nickname;
 
     /**
      * User's phone
@@ -60,18 +61,6 @@ public class User implements Serializable {
      */
     @Column(name = "is_enabled")
     private Boolean isEnabled;
-
-    /**
-     * Account registerUser time
-     */
-    @Column(name = "register_time")
-    private Date registerTime;
-
-    /**
-     * Account updated time
-     */
-    @Column(name = "updated_time")
-    private Date updatedTime;
 
     /**
      * Last password reset time

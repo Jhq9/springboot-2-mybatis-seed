@@ -1,7 +1,7 @@
 package isa.qa.project.service;
 
-import isa.qa.project.dto.request.RoleRequestDTO;
-import isa.qa.project.model.Role;
+import isa.qa.project.dto.RoleDTO;
+import isa.qa.project.vo.RoleVO;
 
 import java.util.List;
 import java.util.Map;
@@ -20,24 +20,24 @@ public interface RoleService {
      *
      * @return role list
      */
-    List<Role> listRole();
+    List<RoleVO> listRole();
 
     /**
      * Add a new role
      *
-     * @param roleRequestDTO role request data
+     * @param roleDTO role request data
      * @return request result map
      */
-    Map<String, Long> saveRole(RoleRequestDTO roleRequestDTO);
+    Map<String, Long> saveRole(RoleDTO roleDTO);
 
     /**
      * Update the saved role info
      *
      * @param id role id
-     * @param roleRequestDTO updating role info
+     * @param roleDTO updating role info
      * @return request result map
      */
-    Map<String, Boolean> updateRole(Long id, RoleRequestDTO roleRequestDTO);
+    Map<String, Boolean> updateRole(Long id, RoleDTO roleDTO);
 
     /**
      * Remove the role

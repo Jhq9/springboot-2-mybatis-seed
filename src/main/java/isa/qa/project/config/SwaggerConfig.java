@@ -30,7 +30,6 @@ public class SwaggerConfig {
     }
 
     private ApiInfo apiInfo() {
-        //TODO 项目描述替换
         return new ApiInfoBuilder()
                 .title("Springboot-2-mybatis-seed Api Document")
                 .description("Springboot-2-mybatis-seed Api Document")

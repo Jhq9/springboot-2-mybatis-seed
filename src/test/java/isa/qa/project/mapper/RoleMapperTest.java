@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class RoleMapperTest extends ApplicationTests {
@@ -21,10 +22,11 @@ public class RoleMapperTest extends ApplicationTests {
     public void init() {
         Role role = new Role();
 
+        role.setId(Mockito.anyLong());
         role.setName(Mockito.anyString());
-        role.setCreatedTime(Mockito.any(Date.class));
+        role.setCreateTime(Mockito.any(LocalDateTime.class));
 
-        roleMapper.insertUseGeneratedKeys(role);
+        roleMapper.insert(role);
 
         Assert.notNull(roleId = role.getId(), "Save the new role failed");
     }

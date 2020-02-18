@@ -1,18 +1,17 @@
 package isa.qa.project.service.impl;
 
-import isa.qa.project.dto.request.RoleRequestDTO;
+import com.github.wujun234.uid.UidGenerator;
+import isa.qa.project.dto.RoleDTO;
 import isa.qa.project.mapper.RoleMapper;
 import isa.qa.project.model.Role;
 import isa.qa.project.service.RoleService;
-import isa.qa.project.utils.ArgumentCheckUtils;
-import isa.qa.project.utils.ResultMapUtils;
+import isa.qa.project.vo.RoleVO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -31,33 +30,37 @@ import static isa.qa.project.utils.ResultMapUtils.genUpdateResultMap;
 @AllArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
+    private final UidGenerator cachedUidGenerator;
+
     private final RoleMapper roleMapper;
 
     @Override
-    public List<Role> listRole() {
-        return roleMapper.selectAll();
+    public List<RoleVO> listRole() {
+        return roleMapper.findAll();
     }
 
     @Override
     @Transactional(rollbackFor = TransactionException.class)
-    public Map<String, Long> saveRole(RoleRequestDTO roleRequestDTO) {
+    public Map<String, Long> saveRole(RoleDTO roleDTO) {
         Role role = new Role();
 
-        role.setName(roleRequestDTO.getName());
-        role.setCreatedTime(Date.from(Instant.now()));
+        role.setId(cachedUidGenerator.getUID());
+        role.setName(roleDTO.getName());
+        role.setCreateTime(LocalDateTime.now());
+        role.setUpdateTime(role.getCreateTime());
 
-        roleMapper.insertUseGeneratedKeys(role);
+        roleMapper.insert(role);
 
         return genIdResultMap("roleId", role.getId());
     }
 
     @Override
     @Transactional(rollbackFor = TransactionException.class)
-    public Map<String, Boolean> updateRole(Long id, RoleRequestDTO roleRequestDTO) {
+    public Map<String, Boolean> updateRole(Long id, RoleDTO roleDTO) {
         Role role = roleMapper.selectByPrimaryKey(id);
         checkNonNull(role, "未找到对应的角色");
 
-        role.setName(roleRequestDTO.getName());
+        role.setName(roleDTO.getName());
         int updatedNum = roleMapper.updateByPrimaryKeySelective(role);
 
         return genUpdateResultMap("isSuccess", updatedNum == 1);

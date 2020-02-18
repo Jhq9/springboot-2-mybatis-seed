@@ -1,8 +1,8 @@
 package isa.qa.project.service;
 
-import isa.qa.project.dto.request.UserLoginRequestDTO;
-import isa.qa.project.dto.request.UserRegisterRequestDTO;
-import isa.qa.project.dto.request.UserRequestDTO;
+import isa.qa.project.dto.UserLoginDTO;
+import isa.qa.project.dto.UserRegisterDTO;
+import isa.qa.project.dto.UserDTO;
 import isa.qa.project.model.User;
 import isa.qa.project.security.SecurityUser;
 
@@ -20,27 +20,20 @@ import java.util.Map;
 public interface UserService {
 
     /**
-     * List user
-     *
-     * @return user list
-     */
-    List<User> listUser();
-
-    /**
      * User login (session)
      *
-     * @param loginRequestDTO account login info
+     * @param loginDTO account login info
      * @return user info
      */
-    SecurityUser login(UserLoginRequestDTO loginRequestDTO);
+    SecurityUser login(UserLoginDTO loginDTO);
 
     /**
      * Register a new user
      *
-     * @param registerRequestDTO account registerUser info
+     * @param registerDTO account registerUser info
      * @return result map
      */
-    Map<String, Long> registerUser(UserRegisterRequestDTO registerRequestDTO);
+    Map<String, Long> registerUser(UserRegisterDTO registerDTO);
 
     /**
      * Account log out
@@ -62,10 +55,10 @@ public interface UserService {
      * Update the user account info
      *
      * @param id user id
-     * @param userRequestDTO account info
+     * @param userDTO account info
      * @return result map
      */
-    Map<String, Boolean> updateUser(Long id, UserRequestDTO userRequestDTO);
+    Map<String, Boolean> updateUser(Long id, UserDTO userDTO);
 
     /**
      * Send verify code to the phone

@@ -2,6 +2,7 @@ package isa.qa.project.config;
 
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -21,9 +22,10 @@ public class ThreadPoolConfig implements AsyncConfigurer {
     /**
      * 线程池的每个线程的名字前缀
      */
-    private static final String THREAD_NAME_PREFIX = "goblin-executor-";
+    private static final String THREAD_NAME_PREFIX = "global-executor-";
 
     @Override
+    @Bean("globalExecutor")
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 

@@ -1,5 +1,6 @@
 package isa.qa.project.core;
 
+import io.swagger.annotations.ApiModelProperty;
 import isa.qa.project.enums.ResultCodeEnums;
 
 /**
@@ -7,11 +8,25 @@ import isa.qa.project.enums.ResultCodeEnums;
  * @create 2017年12月11日10:49:52
  * @desc 统一API响应结果封装
  */
-public class Result {
+public class Result<T> {
 
+    /**
+     * 接口响应状态码
+     */
+    @ApiModelProperty(value = "接口响应状态码，同HTTP状态码规则")
     private int code;
+
+    /**
+     * 接口响应描述信息
+     */
+    @ApiModelProperty(value = "接口响应描述信息")
     private String message;
-    private Object data;
+
+    /**
+     * 接口响应返回数据
+     */
+    @ApiModelProperty(value = "接口响应返回数据")
+    private T data;
 
     public Result setCode(ResultCodeEnums resultCodeEnum) {
         this.code = resultCodeEnum.code;
@@ -36,11 +51,11 @@ public class Result {
         return this;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public Result setData(Object data) {
+    public Result setData(T data) {
         this.data = data;
         return this;
     }

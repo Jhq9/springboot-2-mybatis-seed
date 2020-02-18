@@ -2,6 +2,7 @@ package isa.qa.project.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import isa.qa.project.core.Result;
+import isa.qa.project.exception.ServiceException;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
-import static io.undertow.util.StatusCodes.NOT_FOUND;
 import static isa.qa.project.enums.ResultCodeEnums.*;
 
 /**
@@ -86,7 +86,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
             /*
              * 业务失败的异常，如“账号或密码错误”， 或者存在参数错误
              */
-            if (e instanceof IllegalArgumentException) {
+            if (e instanceof IllegalArgumentException || e instanceof ServiceException) {
                 result.setCode(BAD_REQUEST).setMessage(e.getMessage());
                 LOGGER.info(e.getMessage());
             } else if (e instanceof NoHandlerFoundException) {
@@ -120,7 +120,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     private void responseResult(HttpServletResponse response, Result result) {
         response.setCharacterEncoding(CHARSET_UTF_8);
-        response.setHeader(HEADER_CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setHeader(HEADER_CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(200);
         try {
             response.getWriter().write(objectMapper.writeValueAsString(result));

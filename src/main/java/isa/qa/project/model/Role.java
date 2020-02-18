@@ -1,12 +1,12 @@
 package isa.qa.project.model;
 
-import lombok.Data;
+import isa.qa.project.base.BaseEntity;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  *  角色
@@ -15,25 +15,15 @@ import java.util.Date;
  *  @date      2018/11/21 16:31
  *  @version   1.0
  */
-@Data
+@Getter
+@Setter
+@ToString(callSuper = true)
 @Table(name = "i_role")
-public class Role implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @Column(name = "id")
-    private Long id;
+public class Role extends BaseEntity {
 
     /**
      * Role's name
      */
     @Column(name = "name")
     private String name;
-
-    /**
-     * Role created time
-     */
-    @Column(name = "created_time")
-    private Date createdTime;
 }

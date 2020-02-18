@@ -1,8 +1,9 @@
 package isa.qa.project.service.impl;
 
-import isa.qa.project.dto.request.UserLoginRequestDTO;
-import isa.qa.project.dto.request.UserRegisterRequestDTO;
-import isa.qa.project.dto.request.UserRequestDTO;
+import com.github.wujun234.uid.UidGenerator;
+import isa.qa.project.dto.UserLoginDTO;
+import isa.qa.project.dto.UserRegisterDTO;
+import isa.qa.project.dto.UserDTO;
 import isa.qa.project.exception.ServiceException;
 import isa.qa.project.mapper.RoleMapper;
 import isa.qa.project.mapper.UserMapper;
@@ -23,16 +24,14 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.session.FindByIndexNameSessionRepository;
-import org.springframework.session.Session;
-import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.security.Principal;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +40,6 @@ import static isa.qa.project.utils.ArgumentCheckUtils.checkEquals;
 import static isa.qa.project.utils.ArgumentCheckUtils.checkNonNull;
 import static isa.qa.project.utils.ResultMapUtils.genIdResultMap;
 import static isa.qa.project.utils.ResultMapUtils.genUpdateResultMap;
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -66,6 +64,8 @@ public class UserServiceImpl implements UserService {
 
     private final RoleMapper roleMapper;
 
+    private final UidGenerator cachedUidGenerator;
+
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
@@ -74,20 +74,11 @@ public class UserServiceImpl implements UserService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
-
-    private final RedisOperationsSessionRepository redisOperationsSessionRepository;
-
     @Override
-    public List<User> listUser() {
-        return userMapper.selectAll();
-    }
-
-    @Override
-    public SecurityUser login(UserLoginRequestDTO loginRequestDTO) {
+    public SecurityUser login(UserLoginDTO loginDTO) {
         //根据用户输入的账号及密码生成AuthenticationToken
         UsernamePasswordAuthenticationToken upToken = new UsernamePasswordAuthenticationToken(
-                loginRequestDTO.getPhone(), loginRequestDTO.getPassword());
+                loginDTO.getPhone(), loginDTO.getPassword());
         try {
             //用户名密码登陆效验
             final Authentication authentication = authenticationManager.authenticate(upToken);
@@ -96,7 +87,7 @@ public class UserServiceImpl implements UserService {
             SecurityContextHolder.setContext(ctx);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return userDetailService.loadUserByUsername(loginRequestDTO.getPhone());
+            return (SecurityUser) userDetailService.loadUserByUsername(loginDTO.getPhone());
         } catch (AuthenticationException e) {
             throw new ServiceException("用户不存在或密码错误");
         }
@@ -104,43 +95,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = TransactionException.class)
-    public Map<String, Long> registerUser(UserRegisterRequestDTO registerRequestDTO) {
-        Role role = roleMapper.selectByPrimaryKey(registerRequestDTO.getRoleId());
+    public Map<String, Long> registerUser(UserRegisterDTO registerDTO) {
+        Role role = roleMapper.selectByPrimaryKey(registerDTO.getRoleId());
         checkNonNull(role, "未找到对应的角色");
 
-        String cachedVerifyCode = stringRedisTemplate.opsForValue().get(KEY_PREFIX_VERIFY_CODE + registerRequestDTO.getPhone());
-        checkEquals(registerRequestDTO.getVerifyCode(), cachedVerifyCode, "验证码错误或已失效");
+        String cachedVerifyCode = stringRedisTemplate.opsForValue().get(KEY_PREFIX_VERIFY_CODE + registerDTO.getPhone());
+        checkEquals(registerDTO.getVerifyCode(), cachedVerifyCode, "验证码错误或已失效");
 
-        Date now = Date.from(Instant.now());
+        LocalDateTime now = LocalDateTime.now();
         User user = new User();
 
-        user.setRoleId(registerRequestDTO.getRoleId());
-        user.setName(registerRequestDTO.getUsername());
-        user.setPhone(registerRequestDTO.getPhone());
-        user.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
+        user.setId(cachedUidGenerator.getUID());
+        user.setRoleId(registerDTO.getRoleId());
+        user.setUsername(registerDTO.getPhone());
+        user.setNickname(registerDTO.getUsername());
+        user.setPhone(registerDTO.getPhone());
+        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setIsEnabled(TRUE);
-        user.setEmail(registerRequestDTO.getEmail());
-        user.setRegisterTime(now);
-        user.setUpdatedTime(now);
-        user.setLastPasswordResetTime(now);
+        user.setEmail(registerDTO.getEmail());
+        user.setLastPasswordResetTime(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()));
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
 
-        userMapper.insertUseGeneratedKeys(user);
+        userMapper.insert(user);
 
         return genIdResultMap("userId", user.getId());
     }
 
     @Override
     public Map<String, Boolean> logout(Principal principal) {
-        String phone = principal.getName();
-
         SecurityContextHolder.clearContext();
-        // 查询用户的 Session 信息，返回值 key 为 sessionId
-//        Map<String, ? extends Session> userSessions = sessionRepository.findByIndexNameAndIndexValue(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME, phone);
-//        // 移除用户的 session 信息
-//        List<String> sessionIds = new ArrayList<>(userSessions.keySet());
-//        for (String session : sessionIds) {
-//            redisOperationsSessionRepository.deleteById(session);
-//        }
 
         return genUpdateResultMap("isSuccess", TRUE);
     }
@@ -154,18 +138,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = TransactionException.class)
-    public Map<String, Boolean> updateUser(Long id, UserRequestDTO userRequestDTO) {
+    public Map<String, Boolean> updateUser(Long id, UserDTO userDTO) {
         User user = userMapper.selectByPrimaryKey(id);
         checkNonNull(user, "未找到对应的用户");
 
-        if (isNotEmpty(userRequestDTO.getUsername())) {
-            user.setName(userRequestDTO.getUsername());
+        if (isNotEmpty(userDTO.getUsername())) {
+            user.setNickname(userDTO.getUsername());
         }
-        if (isNotEmpty(userRequestDTO.getEmail())) {
-            user.setEmail(userRequestDTO.getEmail());
+        if (isNotEmpty(userDTO.getEmail())) {
+            user.setEmail(userDTO.getEmail());
         }
 
-        user.setUpdatedTime(Date.from(Instant.now()));
+        user.setUpdateTime(LocalDateTime.now());
 
         int updatedNum = userMapper.updateByPrimaryKeySelective(user);
 

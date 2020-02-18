@@ -18,7 +18,6 @@ public class RestClientConfig {
 
     @Bean
     public RestTemplate restTemplate(ClientHttpRequestFactory factory) {
-
         return new RestTemplate(factory);
     }
 
