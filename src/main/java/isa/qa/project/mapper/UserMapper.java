@@ -2,7 +2,6 @@ package isa.qa.project.mapper;
 
 import isa.qa.project.base.BaseMapper;
 import isa.qa.project.model.User;
-import isa.qa.project.security.SecurityUser;
 import isa.qa.project.vo.UserVO;
 import org.apache.ibatis.annotations.*;
 

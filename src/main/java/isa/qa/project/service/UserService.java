@@ -1,13 +1,11 @@
 package isa.qa.project.service;
 
+import isa.qa.project.dto.UserDTO;
 import isa.qa.project.dto.UserLoginDTO;
 import isa.qa.project.dto.UserRegisterDTO;
-import isa.qa.project.dto.UserDTO;
-import isa.qa.project.model.User;
 import isa.qa.project.security.SecurityUser;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 /**
