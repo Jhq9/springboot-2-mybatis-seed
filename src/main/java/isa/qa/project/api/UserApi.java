@@ -5,19 +5,17 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import isa.qa.project.core.Result;
 import isa.qa.project.core.ResultGenerator;
+import isa.qa.project.dto.UserDTO;
 import isa.qa.project.dto.UserLoginDTO;
 import isa.qa.project.dto.UserRegisterDTO;
-import isa.qa.project.dto.UserDTO;
 import isa.qa.project.security.SecurityUser;
 import isa.qa.project.service.UserService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.Map;
 
 @Api(tags = "用户(账户)", description = "用户(账户)增删改查")
@@ -43,10 +41,10 @@ public class UserApi {
 
     @ApiOperation(value = "登出", notes = "账户退出登录")
     @GetMapping("/actions/logout")
-    public Result<Map<String, Boolean>> logout(@AuthenticationPrincipal Principal principal) {
+    public Result<Map<String, Boolean>> logout() {
         LOGGER.info("API 调用 ： 用户账户登出");
 
-        return ResultGenerator.genSuccessResult(userService.logout(principal));
+        return ResultGenerator.genSuccessResult(userService.logout());
     }
 
     @ApiOperation(value = "用户注册", notes = "新用户注册")
@@ -58,7 +56,7 @@ public class UserApi {
     }
 
     @ApiOperation(value = "用户更新", notes = "用户信息更新")
-    @ApiImplicitParam(name = "id", value = "用户id", paramType = "path")
+    @ApiImplicitParam(name = "id", value = "用户id", paramType = "path", required = true)
     @PutMapping("/{id}")
     public Result<Map<String, Boolean>> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
         LOGGER.info("API 调用 ： 用户信息更新");
@@ -67,20 +65,20 @@ public class UserApi {
     }
 
     @ApiOperation(value = "手机号占用检查", notes = "检查手机号是否被占用注册")
-    @ApiImplicitParam(name = "phone", value = "手机号", paramType = "query")
-    @GetMapping("/phone_num/actions/check")
-    public Result<Map<String, Boolean>> checkPhone(@RequestParam String phone) {
+    @ApiImplicitParam(name = "phoneNumber", value = "手机号", paramType = "query", required = true)
+    @GetMapping("/phoneNums/actions/check")
+    public Result<Map<String, Boolean>> checkPhoneNumber(@RequestParam String phoneNumber) {
         LOGGER.info("API 调用 ： 检查手机号是否被占用注册");
 
-        return ResultGenerator.genSuccessResult(userService.checkPhone(phone));
+        return ResultGenerator.genSuccessResult(userService.checkPhoneNumber(phoneNumber));
     }
 
     @ApiOperation(value = "验证码发送", notes = "发送手机注册验证码")
-    @ApiImplicitParam(name = "phone", value = "手机号", paramType = "query")
-    @GetMapping("/verify_codes/actions/send")
-    public Result<Map<String, Boolean>> sendVerifyCode(@RequestParam String phone) {
+    @ApiImplicitParam(name = "phoneNumber", value = "手机号", paramType = "query")
+    @GetMapping("/verifyCodes/actions/send")
+    public Result<Map<String, Boolean>> sendVerifyCode(@RequestParam String phoneNumber) {
         LOGGER.info("API 调用 ：发送验证码短信");
 
-        return ResultGenerator.genSuccessResult(userService.sendVerifyCode(phone));
+        return ResultGenerator.genSuccessResult(userService.sendVerifyCode(phoneNumber));
     }
 }

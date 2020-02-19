@@ -82,6 +82,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void configureHandlerExceptionResolvers(
             List<HandlerExceptionResolver> exceptionResolvers) {
         exceptionResolvers.add((request, response, handler, e) -> {
+            e.printStackTrace();
             Result result = new Result();
             /*
              * 业务失败的异常，如“账号或密码错误”， 或者存在参数错误

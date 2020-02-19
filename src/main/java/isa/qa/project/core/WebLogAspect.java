@@ -1,6 +1,8 @@
 package isa.qa.project.core;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -8,6 +10,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,15 +21,18 @@ import java.util.Arrays;
 /**
  *  日志请求Api Logger Aspect
  *
- *  @author    May
- *  @date      2018/11/21 14:51
- *  @version   1.0
+ *  @author May
+ *  @date 2018/11/21 14:51
+ *  @version 1.0
  */
 @Aspect
 @Component
 public class WebLogAspect {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(WebLogAspect.class);
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     ThreadLocal<Long> startTime = new ThreadLocal<Long>();
 
@@ -59,8 +65,8 @@ public class WebLogAspect {
 
 
     @AfterReturning(returning = "ret", pointcut = "webLog()")
-    public void doAfterReturning(Object ret) {
-        LOGGER.info("RESPONSE :" + ret);
+    public void doAfterReturning(Object ret) throws JsonProcessingException {
+        LOGGER.info("RESPONSE :" + objectMapper.writeValueAsString(ret));
         LOGGER.info(
                 "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }

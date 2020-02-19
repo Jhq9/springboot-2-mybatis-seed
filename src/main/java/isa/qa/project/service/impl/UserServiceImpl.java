@@ -1,9 +1,9 @@
 package isa.qa.project.service.impl;
 
 import com.github.wujun234.uid.UidGenerator;
+import isa.qa.project.dto.UserDTO;
 import isa.qa.project.dto.UserLoginDTO;
 import isa.qa.project.dto.UserRegisterDTO;
-import isa.qa.project.dto.UserDTO;
 import isa.qa.project.exception.ServiceException;
 import isa.qa.project.mapper.RoleMapper;
 import isa.qa.project.mapper.UserMapper;
@@ -11,6 +11,7 @@ import isa.qa.project.model.Role;
 import isa.qa.project.model.User;
 import isa.qa.project.security.GeneratorUserDetailService;
 import isa.qa.project.security.SecurityUser;
+import isa.qa.project.security.SecurityUtils;
 import isa.qa.project.service.UserService;
 import isa.qa.project.utils.ResultMapUtils;
 import lombok.AllArgsConstructor;
@@ -29,10 +30,10 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static isa.qa.project.constants.CacheConstants.KEY_PREFIX_VERIFY_CODE;
@@ -78,7 +79,7 @@ public class UserServiceImpl implements UserService {
     public SecurityUser login(UserLoginDTO loginDTO) {
         //根据用户输入的账号及密码生成AuthenticationToken
         UsernamePasswordAuthenticationToken upToken = new UsernamePasswordAuthenticationToken(
-                loginDTO.getPhone(), loginDTO.getPassword());
+                loginDTO.getPhoneNumber(), loginDTO.getPassword());
         try {
             //用户名密码登陆效验
             final Authentication authentication = authenticationManager.authenticate(upToken);
@@ -87,7 +88,7 @@ public class UserServiceImpl implements UserService {
             SecurityContextHolder.setContext(ctx);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            return (SecurityUser) userDetailService.loadUserByUsername(loginDTO.getPhone());
+            return (SecurityUser) SecurityUtils.getUserDetails();
         } catch (AuthenticationException e) {
             throw new ServiceException("用户不存在或密码错误");
         }
@@ -99,7 +100,7 @@ public class UserServiceImpl implements UserService {
         Role role = roleMapper.selectByPrimaryKey(registerDTO.getRoleId());
         checkNonNull(role, "未找到对应的角色");
 
-        String cachedVerifyCode = stringRedisTemplate.opsForValue().get(KEY_PREFIX_VERIFY_CODE + registerDTO.getPhone());
+        String cachedVerifyCode = stringRedisTemplate.opsForValue().get(KEY_PREFIX_VERIFY_CODE + registerDTO.getPhoneNumber());
         checkEquals(registerDTO.getVerifyCode(), cachedVerifyCode, "验证码错误或已失效");
 
         LocalDateTime now = LocalDateTime.now();
@@ -107,9 +108,9 @@ public class UserServiceImpl implements UserService {
 
         user.setId(cachedUidGenerator.getUID());
         user.setRoleId(registerDTO.getRoleId());
-        user.setUsername(registerDTO.getPhone());
+        user.setUsername(registerDTO.getPhoneNumber());
         user.setNickname(registerDTO.getUsername());
-        user.setPhone(registerDTO.getPhone());
+        user.setPhoneNumber(registerDTO.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
         user.setIsEnabled(TRUE);
         user.setEmail(registerDTO.getEmail());
@@ -123,15 +124,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Boolean> logout(Principal principal) {
+    public Map<String, Boolean> logout() {
         SecurityContextHolder.clearContext();
 
         return genUpdateResultMap("isSuccess", TRUE);
     }
 
     @Override
-    public Map<String, Boolean> checkPhone(String phone) {
-        int userCount = countUserByPhone(phone);
+    public Map<String, Boolean> checkPhoneNumber(String phoneNumber) {
+        int userCount = countUserByPhoneNumber(phoneNumber);
 
         return genUpdateResultMap("isRegistered", userCount == 1);
     }
@@ -157,11 +158,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Boolean> sendVerifyCode(String phone) {
+    public Map<String, Boolean> sendVerifyCode(String phoneNumber) {
         String verifyCode = randomNumeric(6);
-        LOGGER.debug("Phone={}, VerifyCode={}", phone, verifyCode);
+        LOGGER.debug("Phone={}, VerifyCode={}", phoneNumber, verifyCode);
 
-        String key = KEY_PREFIX_VERIFY_CODE + phone;
+        String key = KEY_PREFIX_VERIFY_CODE + phoneNumber;
         stringRedisTemplate.opsForValue().set(key, verifyCode);
 
         stringRedisTemplate.expire(key, 180, TimeUnit.SECONDS);
@@ -172,12 +173,12 @@ public class UserServiceImpl implements UserService {
     /**
      * Count the user by registered phone
      *
-     * @param phone phone number
+     * @param phoneNumber phone number
      * @return user count
      */
-    private int countUserByPhone(String phone) {
+    private int countUserByPhoneNumber(String phoneNumber) {
         Example example = new Example(User.class);
-        example.createCriteria().andEqualTo("phone", phone);
+        example.createCriteria().andEqualTo("phoneNumber", phoneNumber);
 
         return userMapper.selectCountByExample(example);
     }

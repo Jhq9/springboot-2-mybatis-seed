@@ -17,7 +17,7 @@ public class UserLoginDTO {
      * Account's phone
      */
     @ApiModelProperty(value = "用户的手机号")
-    private String phone;
+    private String phoneNumber;
 
     /**
      * Account's login password(md5 encoded)

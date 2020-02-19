@@ -21,11 +21,11 @@ public interface UserMapper extends BaseMapper<User> {
      * @param username username
      * @return account and role info
      */
-    @Select("SELECT id,role_id,username,nickname,phone,email,password,is_enabled,"
-            + "create_time,update_time,last_password_reset_time "
+    @Select("SELECT id,role_id roleId,username,nickname,phone_number phoneNumber,email,password,is_enabled isEnabled,"
+            + "create_time createTime,update_time updateTime,last_password_reset_time lastPasswordResetTime "
             + "FROM i_user WHERE username=#{username}")
     @Results(value = {
-            @Result(property = "role", column = "role_id",
+            @Result(property = "role", column = "roleId",
                     one = @One(select = "isa.qa.project.mapper.RoleMapper.findById"))
     })
     UserVO findByUsername(@Param("username") String username);

@@ -37,10 +37,10 @@ public class User extends BaseEntity {
     private String nickname;
 
     /**
-     * User's phone
-     */
-    @Column(name = "phone")
-    private String phone;
+	 * User's phone
+	 */
+	@Column(name = "phone_number")
+	private String phoneNumber;
 
     /**
      * User's email

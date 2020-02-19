@@ -5,7 +5,6 @@ import isa.qa.project.dto.UserLoginDTO;
 import isa.qa.project.dto.UserRegisterDTO;
 import isa.qa.project.security.SecurityUser;
 
-import java.security.Principal;
 import java.util.Map;
 
 /**
@@ -37,9 +36,8 @@ public interface UserService {
      * Account log out
      *
      * @return log out result
-     * @param principal
      */
-    Map<String, Boolean> logout(Principal principal);
+    Map<String, Boolean> logout();
 
     /**
      * Check the phone whether registered
@@ -47,7 +45,7 @@ public interface UserService {
      * @param phone phone number
      * @return result map
      */
-    Map<String, Boolean> checkPhone(String phone);
+    Map<String, Boolean> checkPhoneNumber(String phone);
 
     /**
      * Update the user account info
@@ -61,8 +59,8 @@ public interface UserService {
     /**
      * Send verify code to the phone
      *
-     * @param phone phone number
+     * @param phoneNumber phone number
      * @return send result
      */
-    Map<String, Boolean> sendVerifyCode(String phone);
+    Map<String, Boolean> sendVerifyCode(String phoneNumber);
 }

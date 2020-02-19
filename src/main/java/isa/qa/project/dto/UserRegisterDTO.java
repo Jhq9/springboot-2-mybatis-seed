@@ -25,12 +25,12 @@ public class UserRegisterDTO {
     private Long roleId;
 
     /**
-     * Register phone number
-     */
-    @ApiModelProperty(value = "注册的手机号")
-    @NotEmpty(message = "注册手机号不能为空")
-    @Pattern(regexp = PHONE_REGEX, message = "手机格式错误")
-    private String phone;
+	 * Register phone number
+	 */
+	@ApiModelProperty(value = "注册的手机号")
+	@NotEmpty(message = "注册手机号不能为空")
+	@Pattern(regexp = PHONE_REGEX, message = "手机格式错误")
+	private String phoneNumber;
 
     /**
      * The verify code sent to the phone (Cached)
